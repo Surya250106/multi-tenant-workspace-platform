@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  # 1. Relational database service
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password_123
+      POSTGRES_DB: task_management_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d task_management_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis PubSub and rate limiter service
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 3. Node/Express Backend running as non-root user
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: backend
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres_password_123@postgres:5432/task_management_db?schema=public"
+      REDIS_URL: "redis://redis:6379"
+      PORT: 8080
+      NODE_ENV: production
+      JWT_SECRET: super_secret_jwt_access_key_987654321
+      JWT_REFRESH_SECRET: super_secret_jwt_refresh_key_123456789
+      CLIENT_URL: "http://localhost"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/api/v1/health').then(r => r.ok ? process.exit(0) : process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 4. React static build / client preview service
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: "http://localhost/api/v1"
+      VITE_WS_URL: "http://localhost"
+    depends_on:
+      - backend
+
+  # 5. Nginx reverse-proxy ingress gateway
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+
+  # 6. Prometheus systems scraper
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+    depends_on:
+      - backend
+
+  # 7. Grafana visualization panel
+  grafana:
+    image: grafana/grafana-oss:10.0.0
+    container_name: grafana
+    ports:
+      - "3001:3000" # Mapping to port 3001 on host to avoid port 3000 collisions
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./monitoring/grafana-dashboard.json:/etc/grafana/provisioning/dashboards/dashboard.json:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+  grafanadata:
+    driver: local
