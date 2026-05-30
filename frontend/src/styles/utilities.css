@@ -1,0 +1,54 @@
+/* Helper CSS Utilities */
+.glassmorphism-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--rounded-lg);
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Badge styles */
+.badge-base {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--rounded-full);
+}
+
+/* Soft accent backgrounds */
+.bg-soft-blue {
+  background-color: rgba(37, 99, 235, 0.08);
+  color: var(--accent-blue);
+}
+
+.bg-soft-emerald {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.bg-soft-amber {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+}
+
+.bg-soft-red {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+.bg-soft-violet {
+  background-color: var(--purple-bg);
+  color: var(--purple);
+}

@@ -1,0 +1,54 @@
+:root {
+  /* Color Palette - Premium Light Mode SaaS */
+  --bg-app: #f8fafc;        /* slate-50 */
+  --bg-surface: #ffffff;    /* pure white */
+  --bg-secondary: #f1f5f9;  /* slate-100 */
+  --bg-hover: #f8fafc;      /* slate-50 for list item hovers */
+  
+  --border-color: #e2e8f0;  /* slate-200 */
+  --border-focus: #3b82f6;  /* blue-500 */
+  
+  --text-primary: #0f172a;    /* slate-900 */
+  --text-secondary: #475569;  /* slate-600 */
+  --text-muted: #94a3b8;      /* slate-400 */
+  
+  /* Status/Accent Colors */
+  --accent-blue: #2563eb;       /* blue-600 */
+  --accent-blue-hover: #1d4ed8; /* blue-700 */
+  
+  --success: #10b981;       /* emerald-500 */
+  --success-bg: #ecfdf5;    /* emerald-50 */
+  --success-border: #a7f3d0;/* emerald-200 */
+  
+  --warning: #f59e0b;       /* amber-500 */
+  --warning-bg: #fffbeb;    /* amber-50 */
+  --warning-border: #fde68a;/* amber-200 */
+  
+  --danger: #ef4444;        /* red-500 */
+  --danger-bg: #fef2f2;     /* red-50 */
+  --danger-border: #fca5a5; /* red-200 */
+  
+  --purple: #8b5cf6;        /* violet-500 */
+  --purple-bg: #f5f3ff;     /* violet-50 */
+  
+  /* Borders and Border Radius */
+  --rounded-sm: 4px;
+  --rounded-md: 6px;
+  --rounded-lg: 8px;
+  --rounded-xl: 12px;
+  --rounded-2xl: 16px;
+  --rounded-full: 9999px;
+  
+  /* Box Shadows - Premium & Soft */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  
+  /* Navigation Theme Options */
+  --sidebar-bg: #0f172a;        /* Sleek dark-slate sidebar for contrast */
+  --sidebar-text: #94a3b8;      /* slate-400 */
+  --sidebar-text-active: #ffffff;
+  --sidebar-hover: #1e293b;     /* slate-800 */
+  --sidebar-border: #1e293b;
+}
