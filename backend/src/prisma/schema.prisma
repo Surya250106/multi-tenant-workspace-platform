@@ -1,0 +1,175 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  username      String   @unique
+  password_hash String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  is_deleted    Boolean  @default(false)
+  deleted_at    DateTime?
+
+  workspace_members WorkspaceMember[]
+  tasks_assigned    Task[]            @relation("TaskAssignee")
+  tasks_created     Task[]            @relation("TaskCreator")
+  comments          Comment[]
+  activity_logs     ActivityLog[]
+  notifications     Notification[]
+  refresh_tokens    RefreshToken[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  members       WorkspaceMember[]
+  projects      Project[]
+  activity_logs ActivityLog[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id           String   @id @default(uuid())
+  workspace_id String
+  user_id      String
+  role         String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, user_id])
+  @@index([user_id], map: "idx_workspace_members_user_id")
+  @@index([workspace_id], map: "idx_workspace_members_workspace")
+  @@map("workspace_members")
+}
+
+model Project {
+  id           String   @id @default(uuid())
+  workspace_id String
+  name         String
+  description  String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  boards    Board[]
+
+  @@map("projects")
+}
+
+model Board {
+  id         String   @id @default(uuid())
+  project_id String
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@map("boards")
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  board_id    String
+  title       String
+  description String?
+  status      String
+  priority    String
+  due_date    DateTime?
+  assignee_id String?
+  creator_id  String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  board    Board @relation(fields: [board_id], references: [id], onDelete: Cascade)
+  assignee User? @relation("TaskAssignee", fields: [assignee_id], references: [id], onDelete: SetNull)
+  creator  User  @relation("TaskCreator", fields: [creator_id], references: [id], onDelete: Cascade)
+
+  comments      Comment[]
+  activity_logs ActivityLog[]
+
+  @@index([board_id], map: "idx_tasks_board_id")
+  @@index([assignee_id], map: "idx_tasks_assignee_id")
+  @@index([status], map: "idx_tasks_status")
+  @@index([due_date], map: "idx_tasks_due_date")
+  @@map("tasks")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  task_id    String
+  user_id    String
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  task Task @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model ActivityLog {
+  id           String   @id @default(uuid())
+  workspace_id String
+  task_id      String
+  user_id      String
+  action       String
+  details      String
+  created_at   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  task      Task      @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id], map: "idx_activity_logs_workspace_id")
+  @@index([task_id], map: "idx_activity_logs_task_id")
+  @@index([created_at(sort: Desc)], map: "idx_activity_logs_created_at")
+  @@map("activity_logs")
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  user_id    String
+  title      String
+  message    String
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id], map: "idx_notifications_user_id")
+  @@index([user_id, is_read], map: "idx_notifications_user_is_read")
+  @@map("notifications")
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  token      String   @unique
+  user_id    String
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token], map: "idx_refresh_tokens_token")
+  @@map("refresh_tokens")
+}

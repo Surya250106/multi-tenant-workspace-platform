@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # Isolated test Postgres instance
+  postgres_test:
+    image: postgres:15-alpine
+    container_name: postgres_test
+    environment:
+      POSTGRES_USER: postgres_test
+      POSTGRES_PASSWORD: postgres_password_test
+      POSTGRES_DB: task_management_test_db
+    ports:
+      - "5433:5432"
+
+  # Isolated test Redis instance
+  redis_test:
+    image: redis:7-alpine
+    container_name: redis_test
+    ports:
+      - "6380:6379"

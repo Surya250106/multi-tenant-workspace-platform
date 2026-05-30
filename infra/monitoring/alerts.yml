@@ -1,0 +1,52 @@
+groups:
+  - name: PlatformAlerts
+    rules:
+      # 1. backend_down alert
+      - alert: backend_down
+        expr: up{job="backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Express Backend Server is Down"
+          description: "The main Node/Express API service instance is unreachable for more than 1 minute."
+
+      # 2. high_error_rate alert
+      - alert: high_error_rate
+        expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) * 100 > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP 5xx error rate detected"
+          description: "Internal Server Error rates have exceeded 5% of overall API throughput over the last 2 minutes."
+
+      # 3. websocket_disconnect_spike alert
+      - alert: websocket_disconnect_spike
+        expr: deriv(active_websocket_connections[5m]) < -20
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WebSocket disconnect spike detected"
+          description: "Active WebSocket connection counts dropped rapidly, indicating a possible cluster node failure or network dropout."
+
+      # 4. redis_unavailable alert
+      - alert: redis_unavailable
+        expr: up{job="redis"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis Cache Store Unavailable"
+          description: "Redis cluster cache connection is offline, blocking rate limit caches and WebSocket cluster pub/sub channels."
+
+      # 5. postgres_unavailable alert
+      - alert: postgres_unavailable
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL Database Engine Down"
+          description: "The primary relational database instance is unreachable, blocking all platform API persistence."
